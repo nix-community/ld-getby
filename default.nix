@@ -43,33 +43,20 @@ runCommandCC "getprotobyname" {
   # Needed for tests as I wanted to use a different implementation than C to
   # verify whether it's working correctly.
   nativeBuildInputs = [ python3 ];
+
+  outputs = ["out" "hook"];
 } ''
-  mkdir -p $out/{lib,nix-support}
+  mkdir -p $out/lib $hook/nix-support
 
   cc -Wall "$source" "$filesProtoObj" -shared -fPIC -o "$out/lib/nix-ld-sandbox.so"
 
-  cat <<SETUP_HOOK > "$out/nix-support/setup-hook"
+  cat <<SETUP_HOOK > "$hook/nix-support/setup-hook"
   export LD_PRELOAD=$out/lib/nix-ld-sandbox.so
   SETUP_HOOK
 
-  # Tests
-  source "$out/nix-support/setup-hook"
-  python3 -c ${lib.escapeShellArg ''
-    """
-    >>> import socket
-    >>> socket.getprotobyname("tcp")
-    6
-    >>> socket.getprotobyname("udp")
-    17
-    >>> socket.getprotobyname("icmp")
-    1
-    >>> socket.getprotobyname("xxx")
-    Traceback (most recent call last):
-      ...
-    OSError: protocol not found
-    >>>
-    """
-    import doctest
-    raise SystemExit(0 if doctest.testmod()[0] == 0 else 1)
-  ''}
+  # Run tests
+  (
+    source "$hook/nix-support/setup-hook"
+    python3 ${./test.py}
+  )
 ''
