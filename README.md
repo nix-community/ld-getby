@@ -1,19 +1,36 @@
-# nix-ld-sandbox - replace impure thoughts^Wactions
+# ld-getby - `/etc/protocols` for the nix sandbox
 
-The Nix sandbox doesn't provide `/etc/protocols`, which means that
-`getprotobyname()` calls would fail because that path is hard-coded.
+This project providers a `LD_PRELOAD` library that intercepts
+`getprotobyname()` calls to load the protocols list from a different source
+than `/etc/protocols`.
 
-This project provides a shared library that can be loaded via `LD_PRELOAD`
-that replaces that call. This library should be usable in other environments.
+It has been written with Nix as a target but could potentially be used in
+other places.
 
-## Example usage
+## Problem statement
+
+In the Nix build sandbox, `/etc/protocols` is not available so any call to
+`getprotobyname()` would fail with for example:
+
+    does not exist (no such protocol name: tcp)
+
+This especially happens with Haskell programs as the stdlib network tends to
+make these calls (in case the definition of `tcp` would change...).
+
+    ConnectionFailure Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)
+
+Instead of patching the glibc to change that hard-coded location we provide a
+library that intecepts that call using the `LD_PRELOAD` mechanism and sources
+the protocols list from another location provided at compile time.
+
+## Example Nix usage
 
 ```diff
     runCommand "requirements.nix" {
 -      nativeBuildInputs = [ pipenv2nix ];
 -      # Haskell needs /etc/protocols at runtime :/
 -      __noChroot = true;
-+      nativeBuildInputs = [ pipenv2nix nix-ld-sandbox.hook cacert ];
++      nativeBuildInputs = [ pipenv2nix ld-getby.hook cacert ];
  
        # pipenv2nix needs access to the network
        outputHash = pipenvSha256;
@@ -25,7 +42,10 @@ that replaces that call. This library should be usable in other environments.
      '';
 ```
 
+## Future
+
+This library could potentially be extended to the other getXXbyYY nss calls.
+
 ## LICENSE
 
 MIT - 2018 aszlig and contributors
-

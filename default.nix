@@ -11,7 +11,7 @@ let
     ;
 in
 
-runCommandCC "getprotobyname" {
+runCommandCC "ld-getby" {
   # This is the compiled object file for nss/nss_files/files-proto.c, which we
   # use to get the internal function _nss_files_getprotobyname_r().
   filesProtoObj = stdenv.mkDerivation {
@@ -48,10 +48,10 @@ runCommandCC "getprotobyname" {
 } ''
   mkdir -p $out/lib $hook/nix-support
 
-  cc -Wall "$source" "$filesProtoObj" -shared -fPIC -o "$out/lib/nix-ld-sandbox.so"
+  cc -Wall "$source" "$filesProtoObj" -shared -fPIC -o "$out/lib/ld-getby.so"
 
   cat <<SETUP_HOOK > "$hook/nix-support/setup-hook"
-  export LD_PRELOAD=$out/lib/nix-ld-sandbox.so
+  export LD_PRELOAD=$out/lib/ld-getby.so
   SETUP_HOOK
 
   # Run tests
