@@ -1,4 +1,15 @@
-with import <nixpkgs> { config = {}; overlays = []; };
+{ pkgs ? import <nixpkgs> { config = {}; overlays = []; } }:
+let
+  inherit (pkgs)
+    bison
+    glibc
+    iana-etc
+    lib
+    python3
+    runCommandCC
+    stdenv
+    ;
+in
 
 runCommandCC "getprotobyname" {
   # This is the compiled object file for nss/nss_files/files-proto.c, which we
