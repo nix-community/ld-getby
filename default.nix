@@ -44,10 +44,17 @@ runCommandCC "getprotobyname" {
   # verify whether it's working correctly.
   nativeBuildInputs = [ python3 ];
 } ''
-  mkdir "$out"
-  cc -Wall "$source" "$filesProtoObj" -shared -fPIC -o "$out/preload.so"
+  mkdir -p $out/{lib,nix-support}
+
+  cc -Wall "$source" "$filesProtoObj" -shared -fPIC -o "$out/lib/nix-ld-sandbox.so"
+
+  cat <<SETUP_HOOK > "$out/nix-support/setup-hook"
+  export LD_PRELOAD=$out/lib/nix-ld-sandbox.so
+  SETUP_HOOK
+
   # Tests
-  LD_PRELOAD="$out/preload.so" python3 -c ${lib.escapeShellArg ''
+  source "$out/nix-support/setup-hook"
+  python3 -c ${lib.escapeShellArg ''
     """
     >>> import socket
     >>> socket.getprotobyname("tcp")
