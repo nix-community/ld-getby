@@ -1,5 +1,7 @@
 # ld-getby - `/etc/protocols` for the nix sandbox
 
+[![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org) - [![Build Status](https://travis-ci.com/nix-community/ld-getby.svg?branch=master)](https://travis-ci.com/nix-community/ld-getby)
+
 This project providers a `LD_PRELOAD` library that intercepts
 `getprotobyname()` calls to load the protocols list from a different source
 than `/etc/protocols`.
