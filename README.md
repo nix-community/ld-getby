@@ -1,5 +1,9 @@
 # ld-getby - `/etc/protocols` for the nix sandbox
 
+*STATUS*: deprecated! it turns out nixpkgs already includes libredirect which
+is a more generic solution to this problem. And is also supported on Darwin
+now.
+
 [![built with nix](https://builtwithnix.org/badge.svg)](https://builtwithnix.org) - [![Build Status](https://travis-ci.com/nix-community/ld-getby.svg?branch=master)](https://travis-ci.com/nix-community/ld-getby)
 
 This project providers a `LD_PRELOAD` library that intercepts
